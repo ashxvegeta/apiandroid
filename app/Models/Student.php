@@ -17,4 +17,10 @@ class Student extends Model
         'joining_date',
         'status'
     ];
+
+    // one Student has many Fee records.
+    public function fees()
+    {
+      return $this->hasMany(Fee::class);
+    }
 }

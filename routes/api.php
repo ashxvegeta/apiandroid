@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\StudentController;
+use App\Http\Controllers\API\FeeController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -15,3 +16,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/students/{id}', [StudentController::class, 'destroy']);
 
 });
+
+Route::post('/fees/pay', [FeeController::class, 'payFee']);
+Route::get('/fees/student/{id}', [FeeController::class, 'studentFees']);
+Route::get('/fees/pending', [FeeController::class, 'pendingFees']);
