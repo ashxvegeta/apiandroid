@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Student;
+use App\Models\Setting;
+use Illuminate\Support\Facades\DB;
 
 class StudentController extends Controller
 {
@@ -28,26 +30,50 @@ class StudentController extends Controller
 
     // ✅ 2. Create Student
 
-        public function store(Request $request)
-    {
 
-    
-
+    public function store(Request $request)
+{
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:students',
             'phone' => 'required'
         ]);
 
-        $student = Student::create($request->all());
+        return DB::transaction(function () use ($request) {
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Student created',
-            'data' => $student
-        ]);
+            $setting = Setting::first();
+
+            if (!$setting) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Seat configuration not found'
+                ], 500);
+            }
+
+            if ($setting->filled_seats >= $setting->total_seats) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No seats available'
+                ], 400);
+            }
+
+            $student = Student::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'course' => $request->course ?? null
+            ]);
+
+            $setting->increment('filled_seats');
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Student created',
+                'data' => $student
+            ]);
+        });
     }
-
+    
     // ✅ 3. Show Student
 
         public function show($id)
@@ -74,14 +100,25 @@ class StudentController extends Controller
 
     // ✅ 5. Delete Student
 
-        public function destroy($id)
+            public function destroy($id)
+        {
+            $student = Student::findOrFail($id);
+            $student->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Student deleted'
+            ]);
+        }
+
+    public function seatStatus()
     {
-        $student = Student::findOrFail($id);
-        $student->delete();
+        $setting = Setting::first();
 
         return response()->json([
-            'status' => true,
-            'message' => 'Student deleted'
+            'total_seats' => $setting->total_seats,
+            'filled_seats' => $setting->filled_seats,
+            'available_seats' => $setting->total_seats - $setting->filled_seats
         ]);
     }
 }
