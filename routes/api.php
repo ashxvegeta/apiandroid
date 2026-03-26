@@ -4,6 +4,7 @@ use App\Http\Controllers\API\StudentController;
 use App\Http\Controllers\API\FeeController;
 use App\Http\Controllers\API\ReportController;
 use App\Http\Controllers\API\ExpenseController;
+use App\Http\Controllers\API\AttendanceController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -23,6 +24,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/expenses', [ExpenseController::class, 'index']);
     Route::get('/expenses/monthly', [ExpenseController::class, 'monthlyExpense']);
     Route::get('/reports/profit', [ExpenseController::class, 'profitReport']);
+
+
+    Route::post('/attendance/punch-in', [AttendanceController::class, 'punchIn']);
+    Route::post('/attendance/punch-out', [AttendanceController::class, 'punchOut']);
+    Route::get('/attendance/my-report', [AttendanceController::class, 'myMonthlyReport']);
 
 });
 // Fee routes
