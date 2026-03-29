@@ -8,10 +8,11 @@ class Attendance extends Model
 {
     //
     protected $fillable = [
-    'student_id',
-    'date',
-    'punch_in',
-    'punch_out',
-    'total_minutes'
+        'student_id',
+        'date',
+        'punch_in',
+        'punch_out',
+        'total_minutes',
+        'seat_number'
     ];
 }

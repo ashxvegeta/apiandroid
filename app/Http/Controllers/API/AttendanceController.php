@@ -14,38 +14,52 @@ class AttendanceController extends Controller
 
 public function punchIn(Request $request)
 {
+    $request->validate([
+        'seat_number' => 'required|integer|min:1'
+    ]);
+
     $student = Student::where('user_id', auth()->id())->first();
+
     if (!$student) {
         return response()->json([
             'status' => false,
-            'message' => 'Student profile not linked to this user'
+            'message' => 'Student not found'
         ], 404);
     }
 
-    $studentId = $student->id;
     $today = now()->toDateString();
 
-    // Check if already punched in
-    $attendance = Attendance::where('student_id', $studentId)
+    // ❌ Already punched in
+    $existing = Attendance::where('student_id', $student->id)
         ->where('date', $today)
         ->first();
 
-    if ($attendance) {
+    if ($existing) {
         return response()->json([
             'status' => false,
-            'message' => 'Already punched in',
-            'data' => $attendance
+            'message' => 'Already punched in'
         ], 400);
     }
 
-    // Create new record
+    // ❌ Seat already occupied
+    $seatTaken = Attendance::where('seat_number', $request->seat_number)
+        ->whereNull('punch_out')
+        ->exists();
+
+    if ($seatTaken) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Seat already occupied'
+        ], 400);
+    }
+
+    // ✅ Create attendance
     $attendance = Attendance::create([
-        'student_id' => $studentId,
+        'student_id' => $student->id,
         'date' => $today,
+        'seat_number' => $request->seat_number,
         'punch_in' => now()->format('H:i:s')
     ]);
-
-    
 
     return response()->json([
         'status' => true,
@@ -85,7 +99,8 @@ public function punchOut(Request $request)
 
     $attendance->update([
         'punch_out' => $punchOut->format('H:i:s'),
-        'total_minutes' => $minutes
+        'total_minutes' => $minutes,
+        'seat_number' => null // 🔥 seat released
     ]);
 
     return response()->json([
@@ -98,6 +113,8 @@ public function punchOut(Request $request)
 
 public function myMonthlyReport(Request $request)
 {
+
+
     $student = Student::where('user_id', auth()->id())->first();
     if (!$student) {
         return response()->json([
