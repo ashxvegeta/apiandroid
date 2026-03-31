@@ -5,6 +5,7 @@ use App\Http\Controllers\API\FeeController;
 use App\Http\Controllers\API\ReportController;
 use App\Http\Controllers\API\ExpenseController;
 use App\Http\Controllers\API\AttendanceController;
+use App\Http\Controllers\API\IDCardController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -29,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/attendance/punch-in', [AttendanceController::class, 'punchIn']);
     Route::post('/attendance/punch-out', [AttendanceController::class, 'punchOut']);
     Route::get('/attendance/my-report', [AttendanceController::class, 'myMonthlyReport']);
-
+    Route::get('/id-card', [IDCardController::class, 'generate']);
 });
 // Fee routes
 Route::post('/fees/pay', [FeeController::class, 'payFee']);
