@@ -15,4 +15,10 @@ class Attendance extends Model
         'total_minutes',
         'seat_number'
     ];
+
+
+    public function student()
+    {
+        return $this->belongsTo(\App\Models\Student::class);
+    }
 }
