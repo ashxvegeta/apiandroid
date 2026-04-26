@@ -14,16 +14,36 @@ class AttendanceController extends Controller
 
 public function punchIn(Request $request)
 {
+    // die('ddd');
     $request->validate([
         'seat_number' => 'required|integer|min:1'
     ]);
 
-    $student = Student::where('user_id', auth()->id())->first();
+    $user = auth()->user();
+    $student = Student::where('user_id', $user->id)->first();
+
+    if (!$student) {
+        // If an admin created the student first, auto-link by matching email.
+        $studentByEmail = Student::where('email', $user->email)->first();
+        if ($studentByEmail) {
+            if (is_null($studentByEmail->user_id)) {
+                $studentByEmail->update(['user_id' => $user->id]);
+                $student = $studentByEmail;
+            } elseif ((int) $studentByEmail->user_id === (int) $user->id) {
+                $student = $studentByEmail;
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Student email is already linked to another user'
+                ], 409);
+            }
+        }
+    }
 
     if (!$student) {
         return response()->json([
             'status' => false,
-            'message' => 'Student not found'
+            'message' => 'Student not found for this account. Ask admin to create a student with your email.'
         ], 404);
     }
 
@@ -70,11 +90,29 @@ public function punchIn(Request $request)
 
 public function punchOut(Request $request)
 {
-    $student = Student::where('user_id', auth()->id())->first();
+    $user = auth()->user();
+    $student = Student::where('user_id', $user->id)->first();
+
+    if (!$student) {
+        $studentByEmail = Student::where('email', $user->email)->first();
+        if ($studentByEmail) {
+            if (is_null($studentByEmail->user_id)) {
+                $studentByEmail->update(['user_id' => $user->id]);
+                $student = $studentByEmail;
+            } elseif ((int) $studentByEmail->user_id === (int) $user->id) {
+                $student = $studentByEmail;
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Student email is already linked to another user'
+                ], 409);
+            }
+        }
+    }
     if (!$student) {
         return response()->json([
             'status' => false,
-            'message' => 'Student profile not linked to this user'
+            'message' => 'Student not found for this account'
         ], 404);
     }
 
@@ -115,11 +153,29 @@ public function myMonthlyReport(Request $request)
 {
 
 
-    $student = Student::where('user_id', auth()->id())->first();
+    $user = auth()->user();
+    $student = Student::where('user_id', $user->id)->first();
+
+    if (!$student) {
+        $studentByEmail = Student::where('email', $user->email)->first();
+        if ($studentByEmail) {
+            if (is_null($studentByEmail->user_id)) {
+                $studentByEmail->update(['user_id' => $user->id]);
+                $student = $studentByEmail;
+            } elseif ((int) $studentByEmail->user_id === (int) $user->id) {
+                $student = $studentByEmail;
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Student email is already linked to another user'
+                ], 409);
+            }
+        }
+    }
     if (!$student) {
         return response()->json([
             'status' => false,
-            'message' => 'Student profile not linked to this user'
+            'message' => 'Student not found for this account'
         ], 404);
     }
 

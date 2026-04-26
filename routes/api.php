@@ -31,6 +31,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/attendance/my-report', [AttendanceController::class, 'myMonthlyReport']);
     Route::get('/id-card', [IDCardController::class, 'generate']);
 
+
+
+});
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    
     Route::get('/admin/daily-attendance', [AdminReportController::class, 'dailyAttendance']);
     Route::get('/admin/monthly-attendance', [AdminReportController::class, 'monthlyAttendance']);
     Route::get('/admin/student-report/{id}', [AdminReportController::class, 'studentReport']);
